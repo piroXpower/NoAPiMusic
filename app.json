@@ -1,0 +1,49 @@
+{
+  "name": "ArchonMusic",
+  "description": "A professional Telegram Music Player Bot built with Python, Pyrogram, and Py-TGCALLS.",
+  "logo": "https://graph.org/file/3fe8a3d51d509a37153fa-9dd99a39c2ae5fb52f.jpg",
+  "keywords": [
+    "python3",
+    "telegram",
+    "bot",
+    "music-bot"
+  ],
+  "stack": "container",
+  "env": {
+    "API_ID": {
+      "description": "Telegram API ID. Get it from https://my.telegram.org.",
+      "value": "",
+      "required": true
+    },
+    "API_HASH": {
+      "description": "Telegram API Hash. Get it from https://my.telegram.org.",
+      "value": "",
+      "required": true
+    },
+    "BOT_TOKEN": {
+      "description": "Telegram Bot Token. Get it from @BotFather.",
+      "value": "",
+      "required": true
+    },
+    "MONGO_URL": {
+      "description": "MongoDB connection URL. Get it from https://cloud.mongodb.com.",
+      "value": "",
+      "required": true
+    },
+    "LOGGER_ID": {
+      "description": "Telegram Log Group ID. Add the bot to your log group and promote it as an administrator.",
+      "value": "",
+      "required": true
+    },
+    "OWNER_ID": {
+      "description": "Telegram User ID of the person who should be assigned as the bot owner.",
+      "value": "",
+      "required": true
+    },
+    "SESSION": {
+      "description": "Pyrogram v2 String Session. Generate one using @StringFatherBot on Telegram.",
+      "value": "",
+      "required": true
+    }
+  }
+}
