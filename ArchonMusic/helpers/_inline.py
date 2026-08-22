@@ -315,17 +315,11 @@ class Inline:
             ],
             [
                 self.ikb(
-                    text=lang["support"],
+                    text="OWNER",
                     url=config.SUPPORT_CHAT,
                     style=ButtonStyle.PRIMARY,
                     icon_custom_emoji_id="5409132617750555920",
-                ),
-                self.ikb(
-                    text=lang["channel"],
-                    url=config.SUPPORT_CHANNEL,
-                    style=ButtonStyle.DANGER,
-                    icon_custom_emoji_id="5409111052719767901",
-                ),
+                ),          
             ],
             [
                 self.ikb(
