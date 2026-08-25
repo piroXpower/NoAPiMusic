@@ -292,6 +292,14 @@ class Inline:
                     ),
                 ],
                 [
+                    self.ikb(           
+                        text="Report Issue",       
+                        url=config.SUPPORT_CHAT,
+                        style=ButtonStyle.PRIMARY,
+                        icon_custom_emoji_id="5409132617750555920",
+                   ),          
+                ],
+                [
                     self.ikb(
                         text="close",
                         callback_data="settings close",
@@ -312,15 +320,7 @@ class Inline:
                     style=ButtonStyle.SUCCESS,
                     icon_custom_emoji_id=5408838292231696180,
                 )
-            ],
-            [
-                self.ikb(
-                    text="OWNER",
-                    url=config.SUPPORT_CHAT,
-                    style=ButtonStyle.PRIMARY,
-                    icon_custom_emoji_id="5409132617750555920",
-                ),          
-            ],
+            ],            
             [
                 self.ikb(
                     text=lang["help"],
