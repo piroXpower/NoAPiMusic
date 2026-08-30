@@ -1,4 +1,5 @@
 import asyncio
+import itertools
 import os
 import re
 from typing import Union
@@ -16,10 +17,24 @@ API_URL = os.environ.get(
     "SHRUTI_API_URL",
     "https://api.shrutibots.site",
 )
-API_KEY = os.environ.get(
-    "SHRUTI_API_KEY",
-    "ShrutiBotswFO5UMhbdcYIYaFcC17Y",
-)
+
+# Pool of 3 API keys
+API_KEYS = [
+    "ShrutiBotsvDVzZ8JpGhZFFpYNLJ6a",
+    "ShrutiBots0Go885F57juetyNYFS15",
+    "ShrutiBotsD7fjwbowNar0bBQLeLQM",
+]
+
+ACTIVE_API_KEYS = [k for k in API_KEYS if k]
+_api_key_cycle = itertools.cycle(ACTIVE_API_KEYS) if ACTIVE_API_KEYS else None
+
+
+def get_next_api_key() -> str | None:
+    """Rotate and return the next API key in round-robin order."""
+    if not _api_key_cycle:
+        return None
+    return next(_api_key_cycle)
+
 
 DOWNLOAD_DIR = "downloads"
 COOKIES_FILE = os.environ.get("YOUTUBE_COOKIES_FILE", "cookies.txt")
@@ -62,12 +77,7 @@ def extract_video_id(link: str) -> str | None:
 
 
 async def _api_download(link: str, media_type: str, timeout: int) -> str | None:
-    """Download media from the configured API with retries.
-
-    The API can occasionally return HTTP 5xx or take longer than the normal
-    request timeout.  Keep those failures isolated and let the caller use the
-    yt-dlp fallback instead of leaving a half-written file behind.
-    """
+    """Download media from the configured API with key rotation and retries."""
     video_id = extract_video_id(link)
     if not video_id:
         return None
@@ -79,13 +89,13 @@ async def _api_download(link: str, media_type: str, timeout: int) -> str | None:
     if os.path.exists(file_path) and os.path.getsize(file_path) > 0:
         return file_path
 
-    params = {"url": video_id, "type": media_type}
-    if API_KEY:
-        params["api_key"] = API_KEY
+    # Rotate to next key on each call
+    current_key = get_next_api_key()
 
-    # Separate connect/read timeouts prevent one slow socket from holding the
-    # Telegram handler forever while still allowing large media files time to
-    # finish downloading.
+    params = {"url": video_id, "type": media_type}
+    if current_key:
+        params["api_key"] = current_key
+
     client_timeout = aiohttp.ClientTimeout(
         total=timeout,
         connect=15,
@@ -159,6 +169,9 @@ async def _api_download(link: str, media_type: str, timeout: int) -> str | None:
             )
 
         if attempt < 2:
+            current_key = get_next_api_key()
+            if current_key:
+                params["api_key"] = current_key
             await asyncio.sleep(1.5 * (attempt + 1))
 
     return None
@@ -244,17 +257,6 @@ class YouTubeAPI:
         self.reg = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
 
     async def save_cookies(self, urls: list[str]) -> None:
-        """Download Netscape-format cookies from one or more batbin.me
-        paste URLs and write them into COOKIES_FILE, so yt-dlp can use a
-        logged-in session and avoid YouTube's bot-check ("Sign in to
-        confirm you're not a bot"). Called once at startup if
-        config.COOKIES_URL is set. Silently skips on failure so a bad
-        URL doesn't block the bot from starting.
-
-        batbin.me's raw-content route isn't at a fixed, well-documented
-        path, so several candidate URLs are tried per paste (in order)
-        and the first one that returns a plausible cookies.txt body
-        wins."""
         if not urls:
             return
 
@@ -556,7 +558,6 @@ class YouTubeAPI:
         message_id: int = 0,
         video: bool = False,
     ):
-        """Return the Track object expected by play_hndlr."""
         try:
             results = VideosSearch(query, limit=1)
             data = (await results.next()).get("result", [])
@@ -592,11 +593,6 @@ class YouTubeAPI:
         exclude: set | None = None,
         title: str | None = None,
     ) -> Union["Track", None]:
-        """Find a track to play next for autoplay, based on the video
-        that just finished. Uses YouTube's own "Mix" (radio, RD-prefixed)
-        playlist to get genuinely related videos — more accurate than a
-        text search on the title — and returns the first one not already
-        in `exclude` (already played this session)."""
         exclude = exclude or set()
         entries = await self.related(video_id)
 
@@ -612,29 +608,25 @@ class YouTubeAPI:
             thumbnail = (
                 thumbs[-1].get("url", "").split("?")[0]
                 if thumbs and thumbs[-1].get("url")
-                else f"https://i.ytimg.com/vi/{entry_id}/hqdefault.jpg"
+                else ""
             )
 
             return Track(
                 id=entry_id,
-                channel_name=entry.get("channel") or entry.get("uploader"),
+                channel_name=(entry.get("channel") or {}).get("name"),
                 duration=seconds_to_time(duration_sec),
                 duration_sec=duration_sec,
-                title=entry.get("title") or "Unknown",
-                url=self.base + entry_id,
+                title=entry.get("title"),
+                url=f"https://www.youtube.com/watch?v={entry_id}",
                 file_path=None,
-                message_id=0,
                 thumbnail=thumbnail,
-                user="Autoplay",
                 video=bool(video),
             )
 
         return None
 
     async def related(self, video_id: str, limit: int = 10) -> list:
-        """Fetch related videos via YouTube's auto-generated Mix/radio
-        playlist (RD<video_id>) — the same "up next" logic YouTube itself
-        uses, so results are far more relevant than a title-based search."""
+        """Fetch related videos via YouTube's auto-generated Mix/radio playlist."""
         def _fetch():
             opts = {
                 "extract_flat": True,
@@ -664,22 +656,14 @@ class YouTubeAPI:
         video: Union[bool, str] = None,
         videoid: Union[bool, str] = None,
     ) -> Union[str, None]:
-        """Fast path: build a direct streamable URL from the download API
-        instead of downloading the whole file to disk first. ffmpeg (used
-        by pytgcalls under the hood) can play straight from an HTTP URL,
-        so playback can start almost immediately instead of waiting for
-        the full download. Validates the URL actually serves audio/video
-        first (a quick, short-timeout check) so a bad/failed API response
-        never reaches ffmpeg as "Audio source not found" — returns None
-        in that case (and when a video ID can't be extracted at all) so
-        callers fall back to the full download() path instead."""
         video_id = extract_video_id(link)
         if not video_id:
             return None
 
+        current_key = get_next_api_key()
         params = f"url={video_id}&type={'video' if video else 'audio'}"
-        if API_KEY:
-            params += f"&api_key={API_KEY}"
+        if current_key:
+            params += f"&api_key={current_key}"
 
         url = f"{API_URL.rstrip('/')}/download?{params}"
 
@@ -689,10 +673,6 @@ class YouTubeAPI:
 
     @staticmethod
     async def _url_has_media(url: str) -> bool:
-        """Quick sanity check that a URL actually serves audio/video
-        content (not an error page/JSON) before handing it to ffmpeg.
-        Short timeout so a slow/dead API fails fast into the download()
-        fallback instead of hanging."""
         try:
             timeout = aiohttp.ClientTimeout(total=6)
             async with aiohttp.ClientSession(timeout=timeout) as session:
