@@ -138,6 +138,14 @@
     "sudo_fetching": "Fᴇᴛᴄʜɪɴɢ Sᴜᴅᴏ Usᴇʀs Lɪsᴛ...",
     "sudo_owner": "<u><b>Oᴡɴᴇʀ:</b></u>\n- {0}\n\n",
     "sudo_users": "<u><b>Sᴜᴅᴏ Usᴇʀs:</b></u>",
+    "cplay_1": "» <b>Yᴏᴜ Cᴀɴ Pʟᴀʏ Mᴜsɪᴄ Iɴ Cʜᴀɴɴᴇʟs Fʀᴏᴍ {0} Tᴏ Aɴʏ Cʜᴀɴɴᴇʟ Oʀ Yᴏᴜʀ Cʜᴀᴛ's Lɪɴᴋᴇᴅ Cʜᴀɴɴᴇʟ.\n\nFᴏʀ Lɪɴᴋᴇᴅ Cʜᴀɴɴᴇʟ :</b>\n<code>/channelplay linked</code>\n\n<b>Fᴏʀ Aɴʏ Oᴛʜᴇʀ Cʜᴀɴɴᴇʟ :</b>\n<code>/channelplay [Cʜᴀɴɴᴇʟ Iᴅ]</code>"
+    "cplay_2": "» <b>Tʜɪs Cʜᴀᴛ Dᴏɴ'ᴛ Hᴀᴠᴇ Aɴʏ Lɪɴᴋᴇᴅ Cʜᴀɴɴᴇʟ.</b>"
+    "cplay_3": "» <b>Cʜᴀɴɴᴇʟ Dᴇғɪɴᴇᴅ Tᴏ {0}.\nCʜᴀɴɴᴇʟ Iᴅ : <code>{1}</code></b>"
+    "cplay_4" : "» <b>Fᴀɪʟᴇᴅ Tᴏ Gᴇᴛ Cʜᴀɴɴᴇʟ.\n\nMᴀᴋᴇ Sᴜʀᴇ Yᴏᴜ'ᴠᴇ Aᴅᴅᴇᴅ Tʜᴇ Bᴏᴛ Iɴ Yᴏᴜʀ Cʜᴀɴɴᴇʟ Aɴᴅ Pʀᴏᴍᴏᴛᴇᴅ Aѕ Aᴅᴍɪɴ.</b>"
+    "cplay_5" : "<b>Oɴʟʏ Cʜᴀɴɴᴇʟs Aʀᴇ Sᴜᴘᴘᴏʀᴛᴇᴅ.</b>"
+    "cplay_6" : "» <b>Yᴏᴜ Nᴇᴇᴅ Tᴏ Bᴇ Tʜᴇ Oᴡɴᴇʀ Oғ Tʜᴇ Cʜᴀɴɴᴇʟ {0} Tᴏ Cᴏɴɴᴇᴄᴛ Iᴛ Wɪᴛʜ Tʜɪs Gʀᴏᴜᴘ.\nCʜᴀɴɴᴇʟ's Oᴡɴᴇʀ :</b> @{1}\n\n<b>Aʟᴛᴇʀɴᴀᴛɪᴠᴇʟʏ Yᴏᴜ Cᴀɴ Lɪɴᴋ Yᴏᴜʀ Gʀᴏᴜᴘ Tᴏ Tʜᴀᴛ Cʜᴀɴɴᴇʟ Aɴᴅ Tʜᴇɴ Tʀʏ Cᴏɴɴᴇᴄᴛɪɴɢ Wɪᴛʜ <code>/channelplay linked</code></b>"
+    "cplay_7" : "» <b>Cʜᴀɴɴᴇʟ Pʟᴀʏ Dɪsᴀʙʟᴇᴅ.</b>"
+    
     "user_not_admin": "Oʜ Sᴜʀᴇ, Gᴏ Aʜᴇᴀᴅ Aɴᴅ Mᴀɴᴀɢᴇ Tʜᴇ Vɪᴅᴇᴏ Cʜᴀᴛ... Oʜ Wᴀɪᴛ, Yᴏᴜ'Rᴇ Nᴏᴛ Aɴ Aᴅᴍɪɴ.",
     "user_no_perms": "Yᴏᴜ? Mᴀɴᴀɢᴇ Tʜᴇ Vɪᴅᴇᴏ Cʜᴀᴛ? Nᴏᴛ Wɪᴛʜ Tʜᴏsᴇ Pᴇʀᴍɪssɪᴏɴs, Sᴡᴇᴇᴛɪᴇ.",
     "user_not_found": "I'Lʟ Nᴇᴇᴅ A Usᴇʀ Iᴅ — Oʀ Wᴏᴜʟᴅ Yᴏᴜ Mɪɴᴅ Rᴇᴘʟʏɪɴɢ Tᴏ Sᴏᴍᴇᴏɴᴇ'S Mᴇssᴀɢᴇ?",
