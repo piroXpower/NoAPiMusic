@@ -40,11 +40,11 @@ class Config:
             url for url in getenv("COOKIES_URL", "").split(" ")
             if url and "batbin.me" in url
         ]
-        self.DEFAULT_THUMB = getenv("DEFAULT_THUMB", "https://graph.org/file/a0c719a648b318df230ab-b7a25ab69ad6cec4fc.jpg")
-        self.PING_IMG = getenv("PING_IMG", "https://graph.org/file/a0c719a648b318df230ab-b7a25ab69ad6cec4fc.jpg")
-        self.START_VIDEO = getenv("START_VIDEO", "https://graph.org/file/2252e56532a9afedf82b0-65f2d893b4c60fe0e1.mp4")
-        self.BOT_NAME = "ArchonMusic Music"
-        self.BOT_PHOTO_URL = "https://graph.org/file/9462106718f8c0bd05ea5-278adabcf2ca58d409.jpg"
+        self.DEFAULT_THUMB = getenv("DEFAULT_THUMB", "https://graph.org/file/916d4d3ed43fcfa4766bb-420186b24e6dc552e0.jpg")
+        self.PING_IMG = getenv("PING_IMG", "https://graph.org/file/0f6a1047af20de24183af-ca71bf5f61dda70013.jpg")
+        self.START_VIDEO = getenv("START_VIDEO", "https://graph.org/file/e8e15d589c6883f5e67da-abd39e5eab54f88ddb.mp4")
+        self.BOT_NAME = "Subhi Music"
+        self.BOT_PHOTO_URL = "https://graph.org/file/1821240927e344f84e33c-55d616099cf61471aa.jpg"
 
     def check(self):
         missing = [
