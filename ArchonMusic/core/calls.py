@@ -39,7 +39,7 @@ class TgCall(PyTgCalls):
         client = await db.get_assistant(chat_id)
         await db.playing(chat_id, paused=False)
         return await client.resume(chat_id)
-
+      
     async def stop(self, chat_id: int) -> None:
         client = await db.get_assistant(chat_id)
         queue.clear(chat_id)
@@ -48,10 +48,16 @@ class TgCall(PyTgCalls):
         self.autoplay_history.pop(chat_id, None)
 
         try:
-            await client.leave_call(chat_id, close=False)
+            await client.leave_call(chat_id)
         except Exception:
-            pass
-
+            # Fallback across all started clients if assistant mapping is stale
+            for c in self.clients:
+                try:
+                    await c.leave_call(chat_id)
+                except Exception:
+                    pass
+                     
+  
 
     async def _fetch_user_avatar(self, media: Media | Track) -> str | None:
         """Downloads the Telegram profile photo of whoever requested
@@ -324,13 +330,24 @@ class TgCall(PyTgCalls):
         return queue.get_current(chat_id)
 
 
+   
     async def play_next(self, chat_id: int) -> None:
         if loop := await db.get_loop(chat_id):
             await db.set_loop(chat_id, loop - 1)
             return await self.replay(chat_id)
 
         finished = queue.get_current(chat_id)
+        # Advance the queue (pops the finished track and returns the upcoming one)
         media = queue.get_next(chat_id)
+
+        if not media:
+            if finished and await db.get_autoplay(chat_id):
+                media = await self._autoplay_next(chat_id, finished)
+
+        if not media:
+            # Nothing left in queue: stop and exit voice chat completely
+            return await self.stop(chat_id)
+
         try:
             if media.message_id:
                 await app.delete_messages(
@@ -342,28 +359,16 @@ class TgCall(PyTgCalls):
         except Exception:
             pass
 
-        if not media:
-            if finished and await db.get_autoplay(chat_id):
-                media = await self._autoplay_next(chat_id, finished)
-            if not media:
-                return await self.stop(chat_id)
-
         _lang, msg = await asyncio.gather(
             lang.get_lang(chat_id),
             app.send_message(chat_id=chat_id, text="Loading..."),
         )
 
         if not media.file_path:
-            # Stream directly from the download API's URL — ffmpeg plays
-            # off it directly, so this is near-instant vs. waiting for a
-            # full download to disk. Falls back to a full download() only
-            # if the API didn't return valid media for this video (rare).
             media.file_path = await yt.stream_url(media.id, video=media.video)
             if not media.file_path:
                 media.file_path, _ = await yt.download(media.id, video=media.video)
             if not media.file_path:
-                # No retry, no next-track chain — just report the
-                # failure once and stop, exactly one message.
                 await msg.edit_text(
                     _lang["error_no_file"].format(config.SUPPORT_CHAT)
                 )
@@ -428,9 +433,16 @@ class TgCall(PyTgCalls):
                     asyncio.create_task(self._delete_msg(sent))
                 except Exception:
                     pass
-            elif isinstance(update, types.StreamEnded):
-                if update.stream_type == types.StreamEnded.Type.AUDIO:
-                    await self.play_next(update.chat_id)
+        # Check for StreamAudioEnded, StreamVideoEnded, or StreamEnded
+            elif isinstance(
+                update,
+                (
+                    types.StreamAudioEnded,
+                    types.StreamVideoEnded,
+                    types.StreamEnded,
+                ),
+            ):
+                await self.play_next(update.chat_id)
             elif isinstance(update, types.ChatUpdate):
                 if update.status in [
                     types.ChatUpdate.Status.KICKED,
